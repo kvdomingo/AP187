@@ -11,3 +11,10 @@ year = {2014},
 url = {https://nae-lab.org/~rei/research/cs/zhao/database.html},
 organization = {The University of Tokyo}
 }
+
+@online{d65,
+author = {{Colour and Vision Research Laboratory}},
+title = {Relative {SPD} of {D}65},
+year = {2007},
+url = {http://cvrl.ioo.ucl.ac.uk/database/data/cie/Illuminantd65.txt}
+}
