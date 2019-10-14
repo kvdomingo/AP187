@@ -106,3 +106,4 @@ venv.bak/
 # Large files
 */RAW
 *.NEF
+*.MOV

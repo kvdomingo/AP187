@@ -1,0 +1,140 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage{physics}
+\usepackage{amssymb}
+\usepackage{subcaption}
+\usepackage{colortbl}
+\newcommand{\activity}{Activity 9 Prelab -- Measuring spectral sensitivity of a camera}
+\input{spp.dat}
+
+%  Editorial staff will uncomment the next line
+% \providecommand{\artnum}[0]{XX-XX}
+% \renewcommand{\articlenum}[0]{SPP-\the\year-\artnum-}
+
+\begin{document}
+
+\title{\TitleFont \activity}
+\author[ ]{\textbf{Kenneth V. Domingo} \\
+2015--03116 \\
+App Physics 187, 1\textsuperscript{st} Semester, A.Y. 2019--20}
+\affil[ ]{\corremail{kvdomingo@up.edu.ph} }
+
+\maketitle
+\thispagestyle{titlestyle}
+
+\section*{Methodology}
+\setcounter{section}{1}
+Activity reference: \cite{soriano, raspi}. A camera's radiometric characterization typically includes dark frame assessments, linearity, image noise assessments, exposure or electronic shutter stability assessments, flat fielding, spectral response measurements, and an absolute radiometric calibration. To perform the radiometric characterizations, the Raspberry Pi camera module is accessed through the PiCamera API. Finer grain control can be achieved through low-level C libraries such as OpenMax IL.
+
+\subsection{Materials}
+\begin{itemize}
+	\item Raspberry Pi 3B+
+	\item Raspberry Pi Camera module
+	\item Thermometer
+	\item Black cloth
+	\item 6500K CCT light source
+	\item 
+\end{itemize}
+
+\subsection{Dark frame assessment}
+\begin{enumerate}
+	\item Measure the room temperature.
+	\item Allow camera to warm up: capture 450 exposures with a black cloth covering the camera, and discard the first 200 frames.
+	\item Vary camera \texttt{ISO} from 100 to 600 in steps of 100.
+	\item Vary camera shutter speed between 5 ms and 50 ms exposure times.
+	\item Obtain the 250-frame mean dark image for each \texttt{ISO} and shutter speed setting and obtain their histograms.
+\end{enumerate}
+
+\subsection{Camera linearity}
+\begin{enumerate}
+	\item Project a diffuse 6500K light source on a white background without any other light/color contaminant.
+	\item Point the camera to the center of the frame and focus at infinity.
+	\item Adjust light distance/intensity such that the digital number (DN) at the center of the image in the green channel is $\sim 80\%$ of the maximum DN value at the longest exposure time/highest \texttt{ISO} setting, i.e., if maximum DN is 255 (8-bit) for 50 ms/\texttt{ISO} 600, center value should be $\sim 204$.
+	\item Normalize the image to the mean of a $200 \times 200$ pixel region in the center of the image.
+	\item Camera linearity with exposure time is determined at a constant \texttt{ISO} 100. Take five images at different exposure settings. Temporally and spatially average each image by a $200 \times 200$ patch at the center of each image.
+	\item Define the root mean square error as
+		\begin{equation}
+			\mathrm{RMSE} = \sqrt{\frac{1}{n} \sum_{i=1}^n e_i^2}
+		\end{equation}
+		where $n$ is the number of data points and $e_i$ is the residual $y_\mathrm{true} - y_\mathrm{pred}$.
+	\item Camera linearity with \texttt{ISO} is determined at a constant shutter speed of 10 ms. Again, take five images at each \texttt{ISO} setting and normalize as before.
+\end{enumerate}
+
+\subsection{Sensor image noise}
+\begin{enumerate}
+	\item Total sensor image noise is expressed as
+		\begin{equation}
+			S_\mathrm{total}^2 = S_\mathrm{shot}^2 + S_\mathrm{read}^2 + S_\mathrm{FPN}^2
+		\end{equation}
+	\item Acquire images with a setup similar to the previous section. Keep illumination, shutter speed, and \texttt{ISO} constant. Allow camera warm up and obtain 250 frames of data each for five different illumination levels.
+	\item Sample pixel locations at every 1000 pixels s.t. each 8 MP image produces $\sim 8000$ data points of mixed RGB. Acquire data at \texttt{ISO} 100, 200, 400 at 5 ms. Plot the variance vs mean DN and perform linear regression.
+\end{enumerate}
+
+\subsection{Camera exposure stability}
+\begin{enumerate}
+	\item Fix camera settings at \texttt{ISO} 100, 5 ms. Acquire frames every 2 s.
+	\item Set illumination s.t. center green channel pixels are $\sim 800$ DN.
+	\item Acquire a total of 400 frames. Spatially average and normalize to the steady-state temporal mean (temporal mean of the last 150 frames).
+	\item Plot steady-state temporal mean vs time as
+		\begin{equation}
+			\mathrm{signal}\% = A\qty[1 - \exp(\frac{-F}{F_c})] + A_0
+		\end{equation}
+		where $A$ is a scale factor, $F$ is the frame number, $F_c$ is a frame constant ($\propto$ time constant), $A_0$ is an offset constant. Time constant $= F_c \times$ framerate.
+	\item Perform measurement for both dark frame and bright frame.
+\end{enumerate}
+
+\subsection{Flat fielding}
+\begin{enumerate}
+	\item Fix settings at \texttt{ISO} 100, 20 ms. Capture a relatively flat image (i.e., wall) with uniform illumination.
+	\item Project the image as a surface and obtain its Fourier coefficients by fitting a Fourier series
+		\begin{equation}
+			f(x) = a_0 + \sum_{n=1}^\infty a_n \cos(nwx) + b_n \sin(nwx)
+		\end{equation}
+\end{enumerate}
+
+\subsection{Spectral response}
+\begin{enumerate}
+	\item Vary illumination wavelength from 350--800 nm. Normalize the response to the peak.
+\end{enumerate}
+
+\subsection{Absolute radiometric calibration}
+\begin{enumerate}
+	\item Generalized radiometric equation for a dark frame-subtracted image:
+		\begin{equation}
+			\mathrm{DN} = \frac{N_e}{\mathrm{QSE}} \approx \frac{\pi\tau A_d}{4\qty(f\#)^2 \mathrm{QSE}hc} \int_0^\infty L(\lambda) T(\lambda) \eta(\lambda) \lambda \dd{\lambda}
+		\end{equation}
+		where QSE is the quantum scale equivalence, $\tau$ is the exposure time, $A_d$ is the detector area, $f\#$ is the camera's $f$-number, $h$ is Planck's constant, $c$ is the speed of light, $\lambda$ is the light wavelength, $L$ is the spectral radiance, $T$ is the optical transmission, and $\eta$ is the quantum efficiency. The camera spectral response $S$ can be defined as
+		\begin{equation}
+			S(\lambda) = T(\lambda)\eta(\lambda)\lambda
+		\end{equation}
+		The spectral radiance is defined as
+		\begin{equation}
+			\bar{L} = \frac{\int_0^\infty L(\lambda)S(\lambda)\dd{\lambda}}{\int_0^\infty S(\lambda)\dd{\lambda}}
+		\end{equation}
+		Then we can write
+		\begin{equation}
+			\mathrm{DN} = \frac{\pi\tau A_d \mathrm{ISO} \bar{L}}{4(f\#)^2 100 \mathrm{QSE} hc}
+		\end{equation}
+		where
+		\begin{equation}
+			\mathrm{QSE} = \frac{N_{\mathrm{well}}}{N_{\mathrm{DR}}}
+		\end{equation}
+		where $N_{\mathrm{well}}$ is a pixel's well capacity in electrons and $N_{\mathrm{DR}}$ is the digital count range.
+		If we define a calibration coefficient
+		\begin{equation}
+			C = \frac{400\mathrm{QSE}hc}{A_d \pi}
+		\end{equation}
+		We can write
+		\begin{equation}
+			\mathrm{DN} = \frac{\tau\mathrm{ISO}\bar{L}}{C(f\#)^2}
+		\end{equation}
+		The calibration coefficient can be determined for each RGB channel s.t.
+		\begin{equation}
+			\bar{L} = C\qty[\frac{(f\#)^2}{\tau\mathrm{ISO}}]\mathrm{DN}
+		\end{equation}
+\end{enumerate}
+
+
+\bibliographystyle{spp-bst}
+\bibliography{biblio}
+
+\end{document}

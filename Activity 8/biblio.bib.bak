@@ -1,0 +1,12 @@
+@Book{soriano,
+author = {Soriano, Maricor N.},
+title = {Uniform color spaces, color difference, color appearance phenomena},
+year = {2019}
+}
+
+@online{cie64,
+author = {Public.Resource.Org},
+title = {{CIE 15B Tables}},
+year = {2004},
+url = {https://law.resource.org/pub/cfr/ibr/cie.15.2004.tables.xls}
+}
